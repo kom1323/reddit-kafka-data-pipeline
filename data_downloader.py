@@ -5,7 +5,9 @@ import shutil
 
 def download_and_move(dataset_id: str, target_dir: str):
     os.makedirs(target_dir, exist_ok=True)
- 
+    
+    os.environ["KAGGLE_CONFIG_DIR"] = "secrets"
+
     # Download dataset - may return folder path or zip file path
     downloaded_path = kagglehub.dataset_download(dataset_id)
     print("Downloaded to:", downloaded_path)

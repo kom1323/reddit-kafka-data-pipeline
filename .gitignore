@@ -2,6 +2,11 @@
 roadmap/
 kaggle.json
 datasets/
+secrets/
+postgres_password.txt
+postgres_user.txt
+postgres_db.txt
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
