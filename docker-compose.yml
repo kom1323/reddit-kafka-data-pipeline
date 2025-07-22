@@ -12,6 +12,7 @@ services:
       - "5432:5432"
     volumes:
       - pg_data:/var/lib/postgresql/data
+      - ./datasets:/datasets
     secrets:
       - postgres_user
       - postgres_password
@@ -27,3 +28,4 @@ secrets:
 
 volumes:
   pg_data:
+

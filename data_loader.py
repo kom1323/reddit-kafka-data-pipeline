@@ -71,7 +71,6 @@ def create_table(table_name: str,f: TextIO, cur: Cursor, conn: Connection) -> No
         sql_query_create_table += "\n"
 
     sql_query_create_table += ");"
-    print(sql_query_create_table)
     cur.execute(sql_query_create_table) 
     conn.commit()
     print(f"Table {table_name} was created!") 
@@ -83,11 +82,17 @@ def load_entries(table_name: str, f: TextIO, cur: Cursor, conn: Connection) -> N
     table_reader = csv.reader(f, delimiter=',', quotechar='"')
     # Skipping column names
     columns = next(table_reader)
-
-    with cur.copy(
-        sql.SQL("COPY {} FROM STDOUT").format(sql.Identifier("table_name"))
-    ) as copy:
-        pass            #START HERE!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    print(f"Copying entries from {f.name} to table {table_name}")
+    cur.execute( 
+        sql.SQL("COPY {table_name} FROM {file_path} WITH (FORMAT CSV, HEADER TRUE)").format(
+            table_name=sql.Identifier(table_name),
+            file_path=sql.Literal('/' + f.name.replace("\\", "/"))
+            )
+        )
+    print("DONE!")
+    print("Showing 10 first entries:")
+    cur.execute(f"Select * FROM {table_name} LIMIT 10;")   
+    print(cur.fetchall())        
     
 
         
@@ -103,6 +108,7 @@ def load_csv_data(cur: Cursor, conn: Connection) -> None:
             table_name = filename[len(directory) + 1:-4]
             create_table(table_name, f, cur, conn)
             load_entries(table_name, f, cur, conn)
+
            
 
 
@@ -120,7 +126,7 @@ def main():
         with conn.cursor() as cur:
             load_csv_data(cur, conn)
             cur.execute("SELECT tablename FROM pg_tables WHERE schemaname = 'public';")
-            #cur.execute("SELECT * FROM products")
+            cur.execute(f"Select * FROM products LIMIT 10;")
             print(cur.fetchall())
 
 if __name__ == "__main__":
