@@ -5,23 +5,25 @@ from dotenv import load_dotenv
 # Load env variables for db from .env.app
 load_dotenv(dotenv_path="secrets/.env.app")
 
+# Loading .env configs
+DB_NAME = os.getenv("POSTGRES_DB")
+DB_USER = os.getenv("POSTGRES_USER")
+DB_PASSWORD = os.getenv("POSTGRES_PASSWORD")
+DB_HOST = os.getenv("POSTGRES_HOST")
+DB_PORT = os.getenv("POSTGRES_PORT")
 
-def connect():
-    # Loading .env configs
-    db_name = os.getenv("POSTGRES_DB")
-    user = os.getenv("POSTGRES_USER")
-    password = os.getenv("POSTGRES_PASSWORD")
-    host = os.getenv("POSTGRES_HOST")
-    port = os.getenv("POSTGRES_PORT")
-
+def connect_psycorpg():
+    """
+    Start a psycorpg3 connection to the postgres database.
+    """
     conn = None
     try:
         conn = psycopg.connect(
-            dbname=db_name,
-            user=user,
-            password=password,
-            host=host,
-            port=port
+            dbname=DB_NAME,
+            user=DB_USER,
+            password=DB_PASSWORD,
+            host=DB_HOST,
+            port=DB_PORT
             )
     except(Exception, psycopg.DatabaseError) as error:
         print(error)
@@ -30,3 +32,4 @@ def connect():
     print("All good, Connection successful!")
     return conn
             
+

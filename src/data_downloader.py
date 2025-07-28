@@ -4,6 +4,9 @@ import shutil
 
 
 def download_and_move(dataset_id: str, target_dir: str):
+    """
+    download the dataset dataset_id from kaggle and moves it into the target_dir.
+    """
     os.makedirs(target_dir, exist_ok=True)
     
     os.environ["KAGGLE_CONFIG_DIR"] = "secrets"

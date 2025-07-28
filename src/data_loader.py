@@ -2,7 +2,7 @@ import glob
 import csv
 from typing import TextIO
 from psycopg import Cursor, Connection, sql
-from utils import connect
+from utils import connect_psycorpg
 
 # For data sampling to determine the data type of each column
 UNKNOWN_COLUMN = -1
@@ -31,6 +31,9 @@ def is_int(element: any) -> bool:
  
 
 def create_table(table_name: str,f: TextIO, cur: Cursor, conn: Connection) -> None:
+    """
+    Checking each column type, then creating the table (without values) in postgres using an sql query.
+    """
     print("Creating table:",table_name)
     table_reader = csv.reader(f, delimiter=',', quotechar='"')
     
@@ -77,6 +80,9 @@ def create_table(table_name: str,f: TextIO, cur: Cursor, conn: Connection) -> No
 
 
 def load_entries(table_name: str, f: TextIO, cur: Cursor, conn: Connection) -> None:
+    """
+    Inserts values from a csv file into the appropriate table.
+    """
     print("Creating table:",table_name)
     f.seek(0)
     table_reader = csv.reader(f, delimiter=',', quotechar='"')
@@ -98,6 +104,9 @@ def load_entries(table_name: str, f: TextIO, cur: Cursor, conn: Connection) -> N
         
 
 def load_csv_data(cur: Cursor, conn: Connection) -> None:
+    """
+    Loads all the tables in form of csv files into postgres database.
+    """
     # First test connection
     cur.execute("SELECT version();")
     print(cur.fetchone())
@@ -112,7 +121,7 @@ def load_csv_data(cur: Cursor, conn: Connection) -> None:
 
 def main():
     
-    with connect() as conn:
+    with connect_psycorpg() as conn:
         cur = conn.cursor()
         load_csv_data(cur, conn)
         cur.execute("SELECT tablename FROM pg_tables WHERE schemaname = 'public';")
