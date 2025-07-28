@@ -1,14 +1,17 @@
 import psycopg
 import glob
 import csv
+import os
 from typing import TextIO
 from psycopg import Cursor, Connection, sql
+from dotenv import load_dotenv
 
 # For data sampling to determine data types
 UNKNOWN_COLUMN = -1
 STR_COLUMN = 0
 INT_COLUMN = 1
 FLOAT_COLUMN = 2
+
 
 
 def is_float(element: any) -> bool:
@@ -114,18 +117,23 @@ def load_csv_data(cur: Cursor, conn: Connection) -> None:
 
 
 
-
 def main():
+    load_dotenv() 
+    db_name = os.getenv("POSTGRES_DB")
+    user = os.getenv("POSTGRES_USER")
+    password = os.getenv("POSTGRES_PASSWORD")
+
+    print(db_name, user, password)
     with psycopg.connect(
-        dbname="instacart",
-        user="omer",
-        password="password",
+        dbname=db_name,
+        user=user,
+        password=password,
         host="localhost",
         port=5432
     ) as conn:
         with conn.cursor() as cur:
             load_csv_data(cur, conn)
-            cur.execute("SELECT tablename FROM pg_tables WHERE schemaname = 'public';")
+            #cur.execute("SELECT tablename FROM pg_tables WHERE schemaname = 'public';")
             cur.execute(f"Select * FROM products LIMIT 10;")
             print(cur.fetchall())
 
