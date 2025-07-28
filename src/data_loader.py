@@ -1,17 +1,14 @@
-import psycopg
 import glob
 import csv
-import os
 from typing import TextIO
 from psycopg import Cursor, Connection, sql
-from dotenv import load_dotenv
+from utils import connect
 
 # For data sampling to determine the data type of each column
 UNKNOWN_COLUMN = -1
 STR_COLUMN = 0
 INT_COLUMN = 1
 FLOAT_COLUMN = 2
-
 
 
 def is_float(element: any) -> bool:
@@ -40,7 +37,7 @@ def create_table(table_name: str,f: TextIO, cur: Cursor, conn: Connection) -> No
     columns = next(table_reader)
     print(columns)
 
-    #Check for columns types
+    # Check for columns types
     columns_types = ["VARCHAR(255)"] * len(columns)
     str_type_column_flags = [UNKNOWN_COLUMN] * len(columns)
     max_samples = 50
@@ -84,7 +81,7 @@ def load_entries(table_name: str, f: TextIO, cur: Cursor, conn: Connection) -> N
     f.seek(0)
     table_reader = csv.reader(f, delimiter=',', quotechar='"')
     # Skipping column names
-    columns = next(table_reader)
+    next(table_reader)
     print(f"Copying entries from {f.name} to table {table_name}")
     cur.execute( 
         sql.SQL("COPY {table_name} FROM {file_path} WITH (FORMAT CSV, HEADER TRUE)").format(
@@ -101,7 +98,7 @@ def load_entries(table_name: str, f: TextIO, cur: Cursor, conn: Connection) -> N
         
 
 def load_csv_data(cur: Cursor, conn: Connection) -> None:
-    #First test connection
+    # First test connection
     cur.execute("SELECT version();")
     print(cur.fetchone())
 
@@ -112,33 +109,15 @@ def load_csv_data(cur: Cursor, conn: Connection) -> None:
             create_table(table_name, f, cur, conn)
             load_entries(table_name, f, cur, conn)
 
-           
-
-
-
 
 def main():
     
-    # Loading .env configs
-    load_dotenv(dotenv_path="secrets/.env.app")
-    db_name = os.getenv("POSTGRES_DB")
-    user = os.getenv("POSTGRES_USER")
-    password = os.getenv("POSTGRES_PASSWORD")
-    host = os.getenv("POSTGRES_HOST")
-    port = os.getenv("POSTGRES_PORT")
-
-    with psycopg.connect(
-        dbname=db_name,
-        user=user,
-        password=password,
-        host=host,
-        port=port
-    ) as conn:
-        with conn.cursor() as cur:
-            load_csv_data(cur, conn)
-            #cur.execute("SELECT tablename FROM pg_tables WHERE schemaname = 'public';")
-            cur.execute(f"Select * FROM products LIMIT 10;")
-            print(cur.fetchall())
+    with connect() as conn:
+        cur = conn.cursor()
+        load_csv_data(cur, conn)
+        cur.execute("SELECT tablename FROM pg_tables WHERE schemaname = 'public';")
+        print("Showing the tables")
+        print(cur.fetchall())
 
 if __name__ == "__main__":
     main()
