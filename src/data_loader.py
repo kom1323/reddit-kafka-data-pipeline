@@ -6,7 +6,7 @@ from typing import TextIO
 from psycopg import Cursor, Connection, sql
 from dotenv import load_dotenv
 
-# For data sampling to determine data types
+# For data sampling to determine the data type of each column
 UNKNOWN_COLUMN = -1
 STR_COLUMN = 0
 INT_COLUMN = 1
@@ -118,18 +118,21 @@ def load_csv_data(cur: Cursor, conn: Connection) -> None:
 
 
 def main():
-    load_dotenv() 
+    
+    # Loading .env configs
+    load_dotenv(dotenv_path="secrets/.env.app")
     db_name = os.getenv("POSTGRES_DB")
     user = os.getenv("POSTGRES_USER")
     password = os.getenv("POSTGRES_PASSWORD")
+    host = os.getenv("POSTGRES_HOST")
+    port = os.getenv("POSTGRES_PORT")
 
-    print(db_name, user, password)
     with psycopg.connect(
         dbname=db_name,
         user=user,
         password=password,
-        host="localhost",
-        port=5432
+        host=host,
+        port=port
     ) as conn:
         with conn.cursor() as cur:
             load_csv_data(cur, conn)

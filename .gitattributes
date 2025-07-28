@@ -1,0 +1,6 @@
+# Set all text files to use LF line endings in repo
+* text=auto
+
+# Force LF endings on env files 
+*.env text eol=lf
+*.env.* text eol=lf

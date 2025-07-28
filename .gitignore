@@ -1,11 +1,8 @@
 # personal
 roadmap/
-kaggle.json
 datasets/
-secrets/
-postgres_password.txt
-postgres_user.txt
-postgres_db.txt
+secrets/*
+!secrets/.gitkeep
 
 
 # Byte-compiled / optimized / DLL files
