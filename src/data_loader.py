@@ -2,7 +2,7 @@ import glob
 import csv
 from typing import TextIO
 from psycopg import Cursor, Connection, sql
-from utils import connect_psycorpg
+from db.connections import connect_psycorpg
 
 # For data sampling to determine the data type of each column
 UNKNOWN_COLUMN = -1
@@ -103,7 +103,7 @@ def load_entries(table_name: str, f: TextIO, cur: Cursor, conn: Connection) -> N
 
         
 
-def load_csv_data(cur: Cursor, conn: Connection) -> None:
+def load_csv_data(cur: Cursor, conn: Connection, directory: str) -> None:
     """
     Loads all the tables in form of csv files into postgres database.
     """
@@ -111,7 +111,7 @@ def load_csv_data(cur: Cursor, conn: Connection) -> None:
     cur.execute("SELECT version();")
     print(cur.fetchone())
 
-    directory = 'datasets'
+    
     for filename in glob.iglob(f'{directory}/*.csv'):
         with open(filename, newline='') as f:
             table_name = filename[len(directory) + 1:-4]
@@ -120,10 +120,10 @@ def load_csv_data(cur: Cursor, conn: Connection) -> None:
 
 
 def main():
-    
+    directory = 'data'
     with connect_psycorpg() as conn:
         cur = conn.cursor()
-        load_csv_data(cur, conn)
+        load_csv_data(cur, conn, directory)
         cur.execute("SELECT tablename FROM pg_tables WHERE schemaname = 'public';")
         print("Showing the tables")
         print(cur.fetchall())

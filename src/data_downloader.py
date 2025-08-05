@@ -38,5 +38,5 @@ def download_and_move(dataset_id: str, target_dir: str):
     
 if __name__ == "__main__":
     dataset = "psparks/instacart-market-basket-analysis"  
-    download_folder = "datasets"
+    download_folder = "data"
     download_and_move(dataset, download_folder)
