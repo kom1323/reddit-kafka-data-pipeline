@@ -2,7 +2,8 @@ import glob
 import csv
 from typing import TextIO
 from psycopg import Cursor, Connection, sql
-from db.connections import connect_psycorpg
+from src.db.connections import connect_psycorpg
+from src.models.reddit import RedditComment
 
 # For data sampling to determine the data type of each column
 UNKNOWN_COLUMN = -1
@@ -100,8 +101,40 @@ def load_entries(table_name: str, f: TextIO, cur: Cursor, conn: Connection) -> N
     cur.execute(f"Select * FROM {table_name} LIMIT 10;")   
     print(cur.fetchall())        
     
+def create_reddit_comments_table(cur, conn):
+    """Create table specifically for Reddit comments with proper schema"""
 
-        
+    table_name = "reddit_comments"
+    schema = {
+        'id': 'VARCHAR(20) PRIMARY KEY',
+        'body': 'TEXT',
+        'body_html': 'TEXT', 
+        'created_utc': 'TIMESTAMP WITH TIME ZONE',
+        'subreddit': 'VARCHAR(50)',
+        'score': 'INTEGER',
+        'author': 'VARCHAR(50)',
+        'parent_id': 'VARCHAR(20)',
+        'is_submitter': 'BOOLEAN',
+        'total_awards_received': 'INTEGER'
+    }
+
+    columns_sql = ',\n    '.join([f"{col} {dtype}" for col, dtype in schema.items()])
+    
+    sql_query = f"""
+                DROP TABLE IF EXISTS {table_name};
+                CREATE TABLE {table_name} (
+                    {columns_sql}
+                );
+                """
+    
+    cur.execute(sql_query)
+    conn.commit()
+    logger.info(f"Table {table_name} created successfully")
+
+    
+def insert_reddit_comment(reddit_comment: RedditComment, cur, conn):
+    """Insert a single RedditComment object into the database"""
+    
 
 def load_csv_data(cur: Cursor, conn: Connection, directory: str) -> None:
     """

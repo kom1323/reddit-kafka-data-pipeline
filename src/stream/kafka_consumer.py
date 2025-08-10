@@ -2,7 +2,7 @@ from confluent_kafka import Consumer
 from src.utils.logging_config import get_logger
 from pydantic_core import from_json
 from src.models.reddit import RedditComment
-
+from src.db.connections import connect_psycorpg
 logger = get_logger(__name__)
 
 def setup_kafka_consumer():
@@ -16,12 +16,14 @@ def setup_kafka_consumer():
 def msg_to_postgres(msg):
     try:
         message_value = msg.value().decode('utf-8')
-        
-        
-        reddit_comment = RedditComment(from_json(msg, allow_partial=False))
-    except ValueError as e:
-        logger.error("Consumer error processing kafka msg.")
+        reddit_comment = RedditComment.model_validate_json(message_value)
+    except ValidationError as e:
+        logger.error(f"Pydantic validation error: {e}")
     
+    with connect_psycorpg as conn:
+        cur = conn.cursor()
+
+
 
 
 
@@ -31,6 +33,11 @@ def msg_to_postgres(msg):
 def consume_comments():
     consumer = setup_kafka_consumer()
     topic_name = "reddit-comments"
+    
+    
+    
+    
+    
     consumer.subscribe([topic_name])
 
     logger.info(f"Consuming messages from {topic_name}...")
