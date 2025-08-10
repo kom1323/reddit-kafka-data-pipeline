@@ -4,6 +4,11 @@ from typing import TextIO
 from psycopg import Cursor, Connection, sql
 from src.db.connections import connect_psycorpg
 from src.models.reddit import RedditComment
+from src.utils.logging_config import get_logger
+
+logger = get_logger(__name__)
+
+
 
 # For data sampling to determine the data type of each column
 UNKNOWN_COLUMN = -1
@@ -105,6 +110,7 @@ def create_reddit_comments_table(cur, conn):
     """Create table specifically for Reddit comments with proper schema"""
 
     table_name = "reddit_comments"
+    logger.info(f"Creating table {table_name}...")
     schema = {
         'id': 'VARCHAR(20) PRIMARY KEY',
         'body': 'TEXT',
@@ -134,7 +140,23 @@ def create_reddit_comments_table(cur, conn):
     
 def insert_reddit_comment(reddit_comment: RedditComment, cur, conn):
     """Insert a single RedditComment object into the database"""
+    comment_dict = reddit_comment.model_dump()
     
+    columns = list(comment_dict.keys())
+    column_names = ', '.join(columns) 
+    placeholders = ', '.join([f'%({col})s' for col in columns])
+    insert_sql = f"""
+                    INSERT INTO reddit_comments ({column_names})
+                    VALUES ({placeholders})
+                    ON CONFLICT (id) DO NOTHING    
+                """
+
+    cur.execute(insert_sql, comment_dict)
+    conn.commit()
+
+    # Check if row was actually inserted
+    if cur.rowcount <= 0:
+        logger.debug(f"Duplicate comment {comment_dict['id']} skipped")
 
 def load_csv_data(cur: Cursor, conn: Connection, directory: str) -> None:
     """

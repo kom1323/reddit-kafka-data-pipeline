@@ -59,13 +59,12 @@ def extract():
     kafka_producer = setup_kafka_producer()
     topic_name = "reddit-comments"
     submission_limit = 3
-    comments_per_submission_limit = 3
+    comments_per_submission_limit = 20
 
     subreddit = reddit.subreddit("datascience")
     for submission in subreddit.new(limit=submission_limit):
         
-        print(submission.title)
-        print("#############################") 
+        logger.info(f"Reading submission {submission.title}") 
         for comment in submission.comments.list()[:comments_per_submission_limit]:
             
             comment_data = extract_comment_data(comment)
@@ -76,10 +75,7 @@ def extract():
                                     callback=delivery_report)
 
 
-            print(reddit_comment.body)
-
-            print("#############################")  
-            break
+            logger.info(f"Comment #{reddit_comment.id} produced") 
     kafka_producer.flush()
 
 if __name__ == "__main__":
