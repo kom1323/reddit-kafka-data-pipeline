@@ -2,9 +2,12 @@ import psycopg
 import os
 import sys
 from dotenv import load_dotenv
-from sqlalchemy import create_engine, exc
+from sqlalchemy import create_engine, exc, text
+from src.utils.logging_config import get_logger
 # Load env variables for db from .env.app
 load_dotenv(dotenv_path="secrets/.env.app")
+
+logger = get_logger(__name__)
 
 # Loading .env configs
 DB_NAME = os.getenv("POSTGRES_DB")
@@ -35,9 +38,13 @@ def connect_psycorpg():
             
 def connect_sqlalchemy():
     try:
+        logger.info("Connecting to postgres database...")
         engine = create_engine(f"postgresql+psycopg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}") 
+        with engine.connect() as conn:
+            conn.execute(text("SELECT 1"))
+    
     except exc.SQLAlchemyError as error:
-        print(error)
+        logger.error(f"Connection failed: {error}")
         sys.exit(1)
-    print("All good, Connection successful!")
+    logger.info("All good, Connection successful!")
     return engine
