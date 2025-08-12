@@ -9,6 +9,8 @@ The Reddit Kafka Data Pipeline follows a modern streaming architecture:
 **Data Flow**
 ```
 Reddit API (PRAW) → Kafka Producer → Kafka Topics → Kafka Consumer → PostgreSQL
+     ↑                    ↑              ↓              ↑              ↓
+Host Machine        Host Machine   Docker Container  Host Machine  Docker Container
 ```
 
 **Key Components:**
@@ -23,19 +25,23 @@ Reddit API (PRAW) → Kafka Producer → Kafka Topics → Kafka Consumer → Pos
 ### Prerequisites
 
 1. **Clone this repository**
-2. **Set up Python environment** with conda/virtualenv and install dependencies:
+2. **Install Docker and Docker Compose** for running Kafka and PostgreSQL containers
+3. **Set up Python environment** with conda/virtualenv and install dependencies:
    ```bash
    pip install -r requirements.txt
    ```
-3. **Configure environment variables** by copying and editing the example files:
+4. **Configure environment variables** by copying and editing the example files:
    ```bash
    cp .env.app.example secrets/.env.app
    cp .env.reddit.example secrets/.env.reddit
    ```
-4. **Start infrastructure services** using Docker Compose:
+5. **Start containerized services** using Docker Compose:
    ```bash
    docker compose up -d
    ```
+   This will start:
+   - **Kafka broker** container on `localhost:9092`
+   - **PostgreSQL database** container on `localhost:5432`
 
 ### Running the Data Pipeline
 
