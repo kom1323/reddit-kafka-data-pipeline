@@ -4,7 +4,7 @@ import os
 from typing import Dict
 from datetime import datetime, timezone
 from src.models.reddit import RedditComment
-from confluent_kafka import Producer
+from confluent_kafka import Producer, KafkaError, Message
 from src.utils.logging_config import get_logger
 from dotenv import load_dotenv
 load_dotenv(dotenv_path="secrets/.env.app")
@@ -32,7 +32,7 @@ def extract_comment_data(comment) -> Dict[str, any]:
     }
 
 
-def setup_kafka_producer():
+def setup_kafka_producer() -> Producer:
     config = {
         'bootstrap.servers': 'localhost:9092',
         'acks': 'all',
@@ -42,7 +42,7 @@ def setup_kafka_producer():
     }
     return Producer(config)
 
-def delivery_report(err, msg):
+def delivery_report(err: KafkaError, msg: Message) -> None:
     """Callback function for Kafka message delivery reports."""
     if err is not None:
         logger.error(f"Message delivery failed: {err} | Key: {msg.key()}")
@@ -50,32 +50,32 @@ def delivery_report(err, msg):
         logger.info(f"Message delivered | Key: {msg.key()} | Partition: {msg.partition()} | Offset: {msg.offset()}")
 
 
-def extract():
+def extract() -> None:
     reddit = praw.Reddit(
        client_id=CLIENT_ID,
        client_secret=CLIENT_SECRET,
        user_agent=USER_AGENT
     )
     kafka_producer = setup_kafka_producer()
-    topic_name = "reddit-comments"
-    submission_limit = 3
-    comments_per_submission_limit = 20
+    TOPIC_NAME = "reddit-comments"
+    REDDIT_SUBMISSIONS_LIMIT = 3
+    REDDIT_COMMENTS_LIMIT = 20
 
     subreddit = reddit.subreddit("datascience")
-    for submission in subreddit.new(limit=submission_limit):
+    for submission in subreddit.new(limit=REDDIT_SUBMISSIONS_LIMIT):
         
-        logger.info(f"Reading submission {submission.title}") 
-        for comment in submission.comments.list()[:comments_per_submission_limit]:
+        logger.info(f"Reading submission {submission.id}") 
+        for comment in submission.comments.list()[:REDDIT_COMMENTS_LIMIT]:
             
             comment_data = extract_comment_data(comment)
             reddit_comment = RedditComment(**comment_data)
-            kafka_producer.produce(topic_name,
+            kafka_producer.produce(TOPIC_NAME,
                                     value=reddit_comment.model_dump_json(),
                                     key=comment_data['subreddit'],
                                     callback=delivery_report)
 
 
-            logger.info(f"Comment #{reddit_comment.id} produced") 
+            logger.debug(f"Comment #{reddit_comment.id} produced") 
     kafka_producer.flush()
 
 if __name__ == "__main__":

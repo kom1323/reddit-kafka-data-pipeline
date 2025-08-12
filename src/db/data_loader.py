@@ -36,15 +36,14 @@ def is_int(element: any) -> bool:
         return False
  
 
-def create_table(table_name: str,f: TextIO, cur: Cursor, conn: Connection) -> None:
+def create_postgres_table_from_csv(table_name: str,f: TextIO, cur: Cursor, conn: Connection) -> None:
     """
     Checking each column type, then creating the table (without values) in postgres using an sql query.
     """
-    print("Creating table:",table_name)
+    logger.info(f"Creating table: {table_name}")
     table_reader = csv.reader(f, delimiter=',', quotechar='"')
     
     columns = next(table_reader)
-    print(columns)
 
     # Check for columns types
     columns_types = ["VARCHAR(255)"] * len(columns)
@@ -82,31 +81,31 @@ def create_table(table_name: str,f: TextIO, cur: Cursor, conn: Connection) -> No
     sql_query_create_table += ");"
     cur.execute(sql_query_create_table) 
     conn.commit()
-    print(f"Table {table_name} was created!") 
+    logger.info(f"Table {table_name} was created!") 
 
 
-def load_entries(table_name: str, f: TextIO, cur: Cursor, conn: Connection) -> None:
+def load_postgres_entries_from_csv(table_name: str, f: TextIO, cur: Cursor, conn: Connection) -> None:
     """
     Inserts values from a csv file into the appropriate table.
     """
-    print("Creating table:",table_name)
+    logger.info(f"Loading table - {table_name} - from csv")
     f.seek(0)
     table_reader = csv.reader(f, delimiter=',', quotechar='"')
     # Skipping column names
     next(table_reader)
-    print(f"Copying entries from {f.name} to table {table_name}")
+    logger.info(f"Copying entries from {f.name} to table {table_name}")
     cur.execute( 
         sql.SQL("COPY {table_name} FROM {file_path} WITH (FORMAT CSV, HEADER TRUE)").format(
             table_name=sql.Identifier(table_name),
             file_path=sql.Literal('/' + f.name.replace("\\", "/"))
             )
         )
-    print("DONE!")
-    print("Showing 10 first entries:")
+    logger.info("DONE!")
+    logger.debug("Showing 10 first entries:")
     cur.execute(f"Select * FROM {table_name} LIMIT 10;")   
-    print(cur.fetchall())        
+    logger.debug(cur.fetchall())        
     
-def create_reddit_comments_table(cur, conn):
+def create_reddit_comments_table(cur: Cursor, conn: Connection) -> None:
     """Create table specifically for Reddit comments with proper schema"""
 
     table_name = "reddit_comments"
@@ -138,7 +137,7 @@ def create_reddit_comments_table(cur, conn):
     logger.info(f"Table {table_name} created successfully")
 
     
-def insert_reddit_comment(reddit_comment: RedditComment, cur, conn):
+def insert_reddit_comment(reddit_comment: RedditComment, cur: Cursor, conn: Connection) -> None:
     """Insert a single RedditComment object into the database"""
     comment_dict = reddit_comment.model_dump()
     
@@ -164,7 +163,7 @@ def load_csv_data(cur: Cursor, conn: Connection, directory: str) -> None:
     """
     # First test connection
     cur.execute("SELECT version();")
-    print(cur.fetchone())
+    logger.info(cur.fetchone())
 
     
     for filename in glob.iglob(f'{directory}/*.csv'):
@@ -180,8 +179,8 @@ def main():
         cur = conn.cursor()
         load_csv_data(cur, conn, directory)
         cur.execute("SELECT tablename FROM pg_tables WHERE schemaname = 'public';")
-        print("Showing the tables")
-        print(cur.fetchall())
+        logger.debug("Showing the tables")
+        logger.debug(cur.fetchall())
 
 if __name__ == "__main__":
     main()

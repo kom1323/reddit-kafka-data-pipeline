@@ -1,12 +1,13 @@
-from confluent_kafka import Consumer
+from confluent_kafka import Consumer, Message
 from src.utils.logging_config import get_logger
 from pydantic_core import from_json
 from src.models.reddit import RedditComment
 from src.db.connections import connect_psycorpg
+from psycopg import Connection, Cursor
 from src.db.data_loader import create_reddit_comments_table, insert_reddit_comment
 logger = get_logger(__name__)
 
-def setup_kafka_consumer():
+def setup_kafka_consumer() -> Consumer:
     config = {
         'bootstrap.servers': 'localhost:9092',
         'group.id': 'reddit-consumer-group',
@@ -14,7 +15,7 @@ def setup_kafka_consumer():
     }
     return Consumer(config)
 
-def msg_to_postgres(msg, cur, conn):
+def msg_to_postgres(msg: Message, cur: Cursor, conn: Connection) -> None:
 
     offset = msg.offset()
     partition = msg.partition()
@@ -34,7 +35,7 @@ def msg_to_postgres(msg, cur, conn):
 
 
 
-def consume_comments():
+def consume_comments() -> None:
     consumer = setup_kafka_consumer()
     topic_name = "reddit-comments"
     

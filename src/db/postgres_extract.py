@@ -12,7 +12,7 @@ def main():
     query = "Select * from reddit_comments LIMIT 10;"
 
     df = pd.read_sql_query(query, engine)
-    print(df)
+    logger.debug(df)
 
 if __name__ == "__main__":
     main()
