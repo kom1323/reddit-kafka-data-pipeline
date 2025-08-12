@@ -3,7 +3,7 @@ roadmap/
 datasets/
 secrets/*
 !secrets/.gitkeep
-
+src/archive/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
