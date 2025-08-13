@@ -59,8 +59,8 @@ def extract() -> None:
     kafka_producer = setup_kafka_producer()
     TOPIC_NAME = "reddit-comments"
     SUBREDDIT = "datascience"
-    REDDIT_SUBMISSIONS_LIMIT = 3
-    REDDIT_COMMENTS_LIMIT = 20
+    REDDIT_SUBMISSIONS_LIMIT = 50
+    REDDIT_COMMENTS_LIMIT = 100
     
 
     subreddit = reddit.subreddit(SUBREDDIT)
