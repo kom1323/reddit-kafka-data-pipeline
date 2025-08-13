@@ -1,3 +1,4 @@
+from tkinter import E
 from fastapi import APIRouter, HTTPException, Query
 from src.db.connections import connect_psycorpg
 from src.utils.logging_config import get_logger
@@ -5,7 +6,9 @@ from typing import Annotated
 logger = get_logger(__name__)
 router = APIRouter()
 
-COMMENT_COLUMNS = ['id', 'body', 'created_utc', 'subreddit', 'score', 'author']
+COMMENT_COLUMNS_SHORT = ['id', 'body', 'created_utc', 'subreddit', 'score', 'author']
+COMMENT_COLUMNS_LONG = ['id', 'body', 'body_html', 'created_utc', 'subreddit', 'score', 'author', 'parent_id', 'is_submitter', 'total_awards_received']
+
 
 @router.get("/")
 async def get_comments(limit: Annotated[int | None, Query()] = None, 
@@ -21,7 +24,7 @@ async def get_comments(limit: Annotated[int | None, Query()] = None,
 
 
             query = f"""
-                    SELECT {', '.join(COMMENT_COLUMNS)}
+                    SELECT {', '.join(COMMENT_COLUMNS_SHORT)}
                     FROM reddit_comments
                     ORDER BY created_utc
                     DESC
@@ -31,14 +34,32 @@ async def get_comments(limit: Annotated[int | None, Query()] = None,
 
             cur.execute(query, (limit, offset))
             rows = cur.fetchall()
-            comments = [dict(zip(columns, row)) for row in rows]
+            comments = [dict(zip(COMMENT_COLUMNS_SHORT, row)) for row in rows]
             return {"comments": comments, "count": len(comments)}
 
     except Exception as e:
-        logger.error(f"Error: {e}")
+        logger.error(e)
         raise HTTPException(status_code=500, detail="Database error")
 
 
 @router.get("/{comment_id}")
-async def get_comment(comment_id):
-    pass
+async def get_comment(comment_id: str):
+    try:
+        with connect_psycorpg() as conn:
+            cur = conn.cursor()
+
+            query = f"""
+                    SELECT {', '.join(COMMENT_COLUMNS_LONG)} 
+                    FROM reddit_comments
+                    WHERE id = %s
+                    """ 
+            cur.execute(query, (comment_id,))
+            data = cur.fetchone()
+            if not data:
+                raise HTTPException(status_code=404, detail="Comment not found")
+
+            return dict(zip(COMMENT_COLUMNS_LONG, data))
+
+    except Exception as e:
+        logger.error(e)
+        raise HTTPException(status_code=500, detail="Database error")
