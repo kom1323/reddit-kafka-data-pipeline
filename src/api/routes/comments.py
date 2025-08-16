@@ -1,4 +1,3 @@
-from tkinter import E
 from fastapi import APIRouter, HTTPException, Query
 from src.db.connections import connect_psycorpg
 from src.utils.logging_config import get_logger
@@ -11,7 +10,7 @@ COMMENT_COLUMNS_LONG = ['id', 'body', 'body_html', 'created_utc', 'subreddit', '
 
 
 @router.get("/")
-async def get_comments(limit: Annotated[int | None, Query()] = None, 
+async def get_comments(limit: Annotated[int | None, Query(max_value)] = None, 
                         offset: Annotated[int | None, Query()] = None ):
     try:
         with connect_psycorpg() as conn:

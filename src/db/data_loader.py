@@ -117,7 +117,7 @@ def create_reddit_comments_table(cur: Cursor, conn: Connection) -> None:
         'created_utc': 'TIMESTAMP WITH TIME ZONE',
         'subreddit': 'VARCHAR(50)',
         'score': 'INTEGER',
-        'author': 'VARCHAR(50)',
+        'author': 'VARCHAR(50) NULL',
         'parent_id': 'VARCHAR(20)',
         'is_submitter': 'BOOLEAN',
         'total_awards_received': 'INTEGER'

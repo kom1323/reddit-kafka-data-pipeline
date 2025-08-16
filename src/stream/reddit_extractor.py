@@ -3,6 +3,8 @@ import praw
 import os
 from typing import Dict
 from datetime import datetime, timezone
+
+from praw.models import Subreddits
 from src.models.reddit import RedditComment
 from confluent_kafka import Producer, KafkaError, Message
 from src.utils.logging_config import get_logger
@@ -58,26 +60,28 @@ def extract() -> None:
     )
     kafka_producer = setup_kafka_producer()
     TOPIC_NAME = "reddit-comments"
-    SUBREDDIT = "datascience"
+    SUBREDDITS = ["datascience", "Destiny", "WatchPeopleDieInside"]
     REDDIT_SUBMISSIONS_LIMIT = 50
     REDDIT_COMMENTS_LIMIT = 100
     
 
-    subreddit = reddit.subreddit(SUBREDDIT)
-    for submission in subreddit.new(limit=REDDIT_SUBMISSIONS_LIMIT):
-        
-        logger.info(f"Reading submission {submission.id}") 
-        for comment in submission.comments.list()[:REDDIT_COMMENTS_LIMIT]:
+    subreddits = [reddit.subreddit(subreddit_name) for subreddit_name in SUBREDDITS]
+
+    for subreddit in subreddits:
+        for submission in subreddit.new(limit=REDDIT_SUBMISSIONS_LIMIT):
             
-            comment_data = extract_comment_data(comment)
-            reddit_comment = RedditComment(**comment_data)
-            kafka_producer.produce(TOPIC_NAME,
-                                    value=reddit_comment.model_dump_json(),
-                                    key=comment_data['subreddit'],
-                                    callback=delivery_report)
+            logger.info(f"Reading submission {submission.id}") 
+            for comment in submission.comments.list()[:REDDIT_COMMENTS_LIMIT]:
+                
+                comment_data = extract_comment_data(comment)
+                reddit_comment = RedditComment(**comment_data)
+                kafka_producer.produce(TOPIC_NAME,
+                                        value=reddit_comment.model_dump_json(),
+                                        key=comment_data['subreddit'],
+                                        callback=delivery_report)
 
 
-            logger.debug(f"Comment #{reddit_comment.id} produced") 
+                logger.debug(f"Comment #{reddit_comment.id} produced") 
     kafka_producer.flush()
 
 if __name__ == "__main__":

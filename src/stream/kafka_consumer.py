@@ -37,15 +37,15 @@ def msg_to_postgres(msg: Message, cur: Cursor, conn: Connection) -> None:
 
 def consume_comments() -> None:
     consumer = setup_kafka_consumer()
-    topic_name = "reddit-comments"
+    TOPIC_NAME = "reddit-comments"
     
     with connect_psycorpg() as conn:
         cur = conn.cursor()
         create_reddit_comments_table(cur, conn)
     
-        consumer.subscribe([topic_name])
+        consumer.subscribe([TOPIC_NAME])
 
-        logger.info(f"Consuming messages from {topic_name}...")
+        logger.info(f"Consuming messages from {TOPIC_NAME}...")
         try:
             while True:
                 msg = consumer.poll(timeout=1.0)

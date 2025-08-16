@@ -28,11 +28,12 @@ def connect_psycorpg() -> psycopg.Connection:
             user=DB_USER,
             password=DB_PASSWORD,
             host=DB_HOST,
-            port=DB_PORT
+            port=DB_PORT,
+            connect_timeout=3
             )
     except psycopg.DatabaseError as error:
         logger.error(f"Connection failed: {error}")
-        sys.exit(1)
+        raise
     
     logger.info("All good, Connection successful!")
     return conn
@@ -46,6 +47,6 @@ def connect_sqlalchemy() -> sqlalchemy.Engine:
     
     except exc.SQLAlchemyError as error:
         logger.error(f"Connection failed: {error}")
-        sys.exit(1)
+        raise
     logger.info("All good, Connection successful!")
     return engine
