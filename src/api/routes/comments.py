@@ -62,3 +62,17 @@ async def get_comment(comment_id: str):
     except Exception as e:
         logger.error(e)
         raise HTTPException(status_code=500, detail="Database error")
+
+
+@router.get("/search")
+async def search_comments(q: Annotated[str, Query(min_length=3,max_length=50)],
+                            limit: Annotated[int | None, Query(le=100)] = 20):
+    try:
+        with connect_psycorpg() as conn:
+            cur = conn.cursor()
+            
+
+
+    except Exception as e:
+        logger.error(e)
+        raise HTTPException(status_code=500, detail="Database error")

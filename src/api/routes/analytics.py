@@ -91,5 +91,51 @@ async def get_trending(limit: Annotated[int | None, Query(ge=1, le=50)] = 10):
 
 
 @router.get("/subreddits/{subreddit_name}")
-async def get_subreddit_stats():
-    pass
+async def get_subreddit_stats(subreddit_name: str):
+    try:
+        with connect_psycorpg() as conn:
+            cur = conn.cursor()
+    
+            query_basic_stats = """
+                                SELECT COUNT(*), AVG(score), MAX(score), COUNT(DISTINCT author)
+                                FROM reddit_comments
+                                WHERE subreddit = %s
+                                """
+            query_recent_comments = """
+                                    SELECT id, body, score, author, created_utc
+                                    FROM reddit_comments
+                                    WHERE subreddit = %s
+                                    ORDER BY created_utc DESC
+                                    LIMIT 10
+                                    """
+
+            cur.execute(query_basic_stats, (subreddit_name,))
+            basic_stats = cur.fetchone()
+            cur.execute(query_recent_comments, (subreddit_name,))
+            recent_comments = cur.fetchall()
+
+            if basic_stats[0] == 0:
+                logger.debug(f"Subreddit {subreddit_name} not found")
+                raise HTTPException(status_code=404, detail="Subreddit not found")
+
+            return {
+                "subreddit": subreddit_name,
+                "total_comments": basic_stats[0],
+                "avg_score": float(basic_stats[1]) if basic_stats[1] else 0,
+                "max_score": basic_stats[2],
+                "unique_authors": basic_stats[3],
+                "recent_comments": [
+                    {
+                        "id": entry[0],
+                        "body": entry[1],
+                        "score": entry[2],
+                        "author": entry[3],
+                        "created_utc": entry[4]
+                    }
+                        for entry in recent_comments
+                ]
+            }
+
+    except Exception as e:
+        logger.error(f"Error retrieving subreddit stats: {e}")
+        raise HTTPException(status_code=500, detail="Database error")
