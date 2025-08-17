@@ -10,8 +10,8 @@ COMMENT_COLUMNS_LONG = ['id', 'body', 'body_html', 'created_utc', 'subreddit', '
 
 
 @router.get("/")
-async def get_comments(limit: Annotated[int | None, Query(max_value)] = None, 
-                        offset: Annotated[int | None, Query()] = None ):
+async def get_comments(limit: Annotated[int | None, Query(le=100)] = None, 
+                        offset: Annotated[int | None, Query(ge=0)] = None ):
     try:
         with connect_psycorpg() as conn:
             cur = conn.cursor()
@@ -41,6 +41,47 @@ async def get_comments(limit: Annotated[int | None, Query(max_value)] = None,
         raise HTTPException(status_code=500, detail="Database error")
 
 
+
+@router.get("/search")
+async def search_comments(q: Annotated[str, Query(min_length=3,max_length=50)],
+                            limit: Annotated[int | None, Query(ge=1, le=100)]=20):
+    try:
+        with connect_psycorpg() as conn:
+            cur = conn.cursor()
+            query = """
+                    SELECT id, body, subreddit, score, author, created_utc
+                    FROM reddit_comments
+                    WHERE body ILIKE %s
+                    ORDER BY created_utc DESC
+                    LIMIT %s
+                    """
+            
+            cur.execute(query, (f"%{q}%", limit))
+            results = [
+                {
+                    "id": entry[0],
+                    "body": entry[1],
+                    "subreddit": entry[2],
+                    "score": entry[3],
+                    "author": entry[4],
+                    "created_utc": entry[5]
+                } 
+                for entry in cur.fetchall()
+            ]
+            
+            return {
+                "query": q,
+                "count": len(results),
+                "results": results
+                
+            }
+
+
+    except Exception as e:
+        logger.error(e)
+        raise HTTPException(status_code=500, detail="Database error")
+
+
 @router.get("/{comment_id}")
 async def get_comment(comment_id: str):
     try:
@@ -58,20 +99,6 @@ async def get_comment(comment_id: str):
                 raise HTTPException(status_code=404, detail="Comment not found")
 
             return dict(zip(COMMENT_COLUMNS_LONG, data))
-
-    except Exception as e:
-        logger.error(e)
-        raise HTTPException(status_code=500, detail="Database error")
-
-
-@router.get("/search")
-async def search_comments(q: Annotated[str, Query(min_length=3,max_length=50)],
-                            limit: Annotated[int | None, Query(le=100)] = 20):
-    try:
-        with connect_psycorpg() as conn:
-            cur = conn.cursor()
-            
-
 
     except Exception as e:
         logger.error(e)

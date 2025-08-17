@@ -88,7 +88,42 @@ async def get_trending(limit: Annotated[int | None, Query(ge=1, le=50)] = 10):
         logger.error(f"Error retrieving analytics trending: {e}")
         raise HTTPException(status_code=500, detail="Database error")
 
+@router.get("/activity")
+async def get_activity(period: Annotated[str | None, Query(regex="^(hourly|daily)$")] = "daily"):
+    try:
+        with connect_psycorpg() as conn:
+            cur = conn.cursor()
+            if period == "daily":
+                query = """
+                        SELECT DATE_TRUNC('day', created_utc) as period, COUNT(*) as comment_count
+                        FROM reddit_comments 
+                        GROUP BY DATE_TRUNC('day', created_utc)
+                        ORDER BY period DESC
+                        LIMIT 30
+                        """
+            else:
+                query = """
+                        SELECT DATE_TRUNC('hour', created_utc) as period, COUNT(*) as comment_count
+                        FROM reddit_comments 
+                        WHERE created_utc >= NOW() - INTERVAL '24 hours'
+                        GROUP BY DATE_TRUNC('hour', created_utc)
+                        ORDER BY period DESC
+                        """
 
+            cur.execute(query)
+            return {
+                "period": period,
+                "activity_data": [
+                    {
+                        "timestamp": str(entry[0]),
+                        "count": entry[1]
+                    }
+                    for entry in cur.fetchall()
+                ]
+            }
+    except Exception as e:
+        logger.error(e)
+        raise HTTPException(status_code=500, detail="Database error")
 
 @router.get("/subreddits/{subreddit_name}")
 async def get_subreddit_stats(subreddit_name: str):
@@ -139,3 +174,5 @@ async def get_subreddit_stats(subreddit_name: str):
     except Exception as e:
         logger.error(f"Error retrieving subreddit stats: {e}")
         raise HTTPException(status_code=500, detail="Database error")
+
+
