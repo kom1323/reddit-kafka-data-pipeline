@@ -4,7 +4,7 @@ datasets/
 secrets/*
 !secrets/.gitkeep
 archive/
-
+temp-lovable/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -212,3 +212,15 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+
+
+# Add these React-specific patterns for the nested project
+reddit-dashboard/node_modules/
+reddit-dashboard/dist/
+reddit-dashboard/build/
+reddit-dashboard/*.local
+reddit-dashboard/.env.local
+reddit-dashboard/.env.development.local
+reddit-dashboard/.env.test.local
+reddit-dashboard/.env.production.local
