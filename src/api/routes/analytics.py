@@ -52,9 +52,6 @@ async def get_summary():
         logger.error(f"Error retrieving analytics summary: {e}")
         raise HTTPException(status_code=500, detail="Database error")
 
-
-
-
 @router.get('/trending')
 async def get_trending(limit: Annotated[int | None, Query(ge=1, le=50)] = 10):
     try:

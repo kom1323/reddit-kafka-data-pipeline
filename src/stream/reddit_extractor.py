@@ -61,8 +61,8 @@ def extract() -> None:
     kafka_producer = setup_kafka_producer()
     TOPIC_NAME = "reddit-comments"
     SUBREDDITS = ["datascience", "Destiny", "WatchPeopleDieInside"]
-    REDDIT_SUBMISSIONS_LIMIT = 50
-    REDDIT_COMMENTS_LIMIT = 100
+    REDDIT_SUBMISSIONS_LIMIT = 10
+    REDDIT_COMMENTS_LIMIT = 20
     
 
     subreddits = [reddit.subreddit(subreddit_name) for subreddit_name in SUBREDDITS]

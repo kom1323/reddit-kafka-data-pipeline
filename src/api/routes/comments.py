@@ -40,8 +40,6 @@ async def get_comments(limit: Annotated[int | None, Query(le=100)] = None,
         logger.error(e)
         raise HTTPException(status_code=500, detail="Database error")
 
-
-
 @router.get("/search")
 async def search_comments(q: Annotated[str, Query(min_length=3,max_length=50)],
                             limit: Annotated[int | None, Query(ge=1, le=100)]=20):
@@ -80,7 +78,6 @@ async def search_comments(q: Annotated[str, Query(min_length=3,max_length=50)],
     except Exception as e:
         logger.error(e)
         raise HTTPException(status_code=500, detail="Database error")
-
 
 @router.get("/{comment_id}")
 async def get_comment(comment_id: str):
