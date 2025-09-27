@@ -1,4 +1,3 @@
-from turtle import ht
 from fastapi import APIRouter, HTTPException, Query
 from src.db.connections import connect_psycorpg
 from src.utils.logging_config import get_logger
