@@ -1,17 +1,17 @@
 import './App.css';
-import Dashboard from './components/Dashboard';
 import SearchInterface from './components/SearchInterface';
+import Dashboard from './components/Dashboard';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
 function App() {
 
   return (
-    <>
-      
-
-      <SearchInterface />
-     {/* <Dashboard /> */}
-     
-      
-    </>
+    <Router>
+      <Routes>
+        <Route path="/" element={<SearchInterface />} />
+        <Route path="/results" element={<Dashboard />} />
+      </Routes>
+    </Router>
   )
 }
 

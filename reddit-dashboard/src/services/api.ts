@@ -39,6 +39,14 @@ export interface CommentData {
 }
 
 
+
+export interface SearchData {
+  query: string;
+  count: number;
+  results: Comment[];
+}
+
+
   export const redditApi = {
     getSummary: async (): Promise<SummaryData> => {
       try {
@@ -58,6 +66,16 @@ export interface CommentData {
         console.error('Error fetching comments:', error);
         throw error;
       }
-    }
+    },
+    searchComments: async (query: string | null, subredditsList: string[]): Promise<SearchData> => {
+      try {
+        const response = await instance.get<SearchData>(`/comments/search`, { params: {q: query , subreddits: subredditsList }});
+        return response.data;
+      } catch (error) {
+        console.error('Error fetching comments In redditApi:', error);
+        throw error;
+      }
+    },
+
   }
   

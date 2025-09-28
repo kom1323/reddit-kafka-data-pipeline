@@ -1,7 +1,12 @@
-import { type AuthorBreakdown } from "../services/api";
+
+interface TopAuthor {
+    author: string;
+    comment_count: number;
+    avg_score: number;
+}
 
 interface TopAuthorsListProps {
-    topAuthors: AuthorBreakdown[];
+    topAuthors: TopAuthor[];
 }
 
 export default function TopAuthorsList({ topAuthors }: TopAuthorsListProps) {

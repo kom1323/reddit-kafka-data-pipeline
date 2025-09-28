@@ -1,8 +1,12 @@
-import { type SubredditBreakdown } from "../services/api";
+
+interface Subreddit {
+    subreddit: string;
+    commentCount: number;
+}
 
 
 interface SubredditBreakdownProp {
-    subreddits: SubredditBreakdown[];
+    subreddits: Subreddit[];
 }
 
 export default function SubredditList({ subreddits }: SubredditBreakdownProp) {
@@ -19,7 +23,7 @@ export default function SubredditList({ subreddits }: SubredditBreakdownProp) {
                     >
                         <span className="font-medium text-gray-700">r/{sub.subreddit}</span>
                         <span className="text-sm text-gray-600 bg-blue-100 px-2 py-1 rounded-full">
-                            {sub.count} comments
+                            {sub.commentCount} comments
                         </span>
                     </div>
                 ))}

@@ -1,6 +1,5 @@
-import { redditApi } from "../services/api";
-import React, { useState, useEffect } from "react";
-
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 export default function SearchInterface() {
 
@@ -23,9 +22,17 @@ export default function SearchInterface() {
     }
 
 
+    const navigate = useNavigate();
     const onSearchHandler = () => {
-
+        const params = new URLSearchParams();
+        params.set('query', searchQuery);
+        if(selectedSubreddits.length > 0) {
+            params.set('subreddits', selectedSubreddits.join(','));
+        }
+        navigate(`/results?${params.toString()}`);
     }
+
+    
 
     return (
         <div className="min-h-screen bg-background">
