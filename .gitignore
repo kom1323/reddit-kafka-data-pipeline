@@ -5,6 +5,7 @@ secrets/*
 !secrets/.gitkeep
 archive/
 temp-lovable/
+reddit-vibes-explorer/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
