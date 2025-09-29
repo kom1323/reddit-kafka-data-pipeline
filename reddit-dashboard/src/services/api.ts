@@ -69,7 +69,8 @@ export interface SearchData {
     },
     searchComments: async (query: string | null, subredditsList: string[]): Promise<SearchData> => {
       try {
-        const response = await instance.get<SearchData>(`/comments/search`, { params: {q: query , subreddits: subredditsList }});
+        const subParams = subredditsList.map((name) => `subreddits=${name.slice(2)}`).join('&');
+        const response = await instance.get<SearchData>(`/comments/search?q=${query}&${subParams}`);
         return response.data;
       } catch (error) {
         console.error('Error fetching comments In redditApi:', error);

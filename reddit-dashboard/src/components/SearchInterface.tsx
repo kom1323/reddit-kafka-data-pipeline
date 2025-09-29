@@ -76,7 +76,7 @@ export default function SearchInterface() {
                             </div>
                             <button
                                 onClick={onSearchHandler}
-                                disabled={!searchQuery.trim()}
+                                disabled={!searchQuery.trim() || selectedSubreddits.length === 0}
                                 className="h-14 px-8 bg-primary text-primary-foreground rounded-lg hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 <span className="w-5 h-5 mr-2 inline-block">📊</span>

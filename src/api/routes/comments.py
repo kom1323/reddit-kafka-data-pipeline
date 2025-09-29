@@ -41,20 +41,23 @@ async def get_comments(limit: Annotated[int | None, Query(le=100)] = None,
         raise HTTPException(status_code=500, detail="Database error")
 
 @router.get("/search")
-async def search_comments(q: Annotated[str, Query(min_length=3,max_length=50)],
+async def search_comments(  q: Annotated[str, Query(min_length=1,max_length=50)],
+                            subreddits: Annotated[list[str], Query()],
                             limit: Annotated[int | None, Query(ge=1, le=100)]=20):
     try:
         with connect_psycorpg() as conn:
             cur = conn.cursor()
-            query = """
+
+            placeholders = ", ".join(["%s"] * len(subreddits))
+            query = f"""
                     SELECT id, body, subreddit, score, author, created_utc
                     FROM reddit_comments
-                    WHERE body ILIKE %s
+                    WHERE body ILIKE %s AND subreddit IN ({placeholders})
                     ORDER BY created_utc DESC
                     LIMIT %s
                     """
-            
-            cur.execute(query, (f"%{q}%", limit))
+            params = [f"%{q}%"] + subreddits + [limit]
+            cur.execute(query, params)
             results = [
                 {
                     "id": entry[0],
