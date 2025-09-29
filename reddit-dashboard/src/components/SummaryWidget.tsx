@@ -51,7 +51,7 @@ export default function SummaryWidget({ data }: SummaryWidgetProps) {
             {/* Summary Stats Header */}
             <div className="bg-gradient-to-r from-blue-500 to-purple-600 text-white p-6 rounded-lg shadow-lg">
                 <h2 className="text-2xl font-bold mb-4">Dashboard Overview</h2>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                     <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4">
                         <div className="text-3xl font-bold">{totalComments}</div>
                         <div className="text-blue-100">Total Comments</div>
@@ -59,6 +59,14 @@ export default function SummaryWidget({ data }: SummaryWidgetProps) {
                     <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4">
                         <div className="text-3xl font-bold">{uniqueSubreddits.size}</div>
                         <div className="text-blue-100">Active Subreddits</div>
+                    </div>
+                    <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4">
+                        <div className="text-3xl font-bold">{topComments[0]?.score || 0}</div>
+                        <div className="text-blue-100">Top Comment Score</div>
+                    </div>
+                    <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4">
+                        <div className="text-3xl font-bold">{avgScore.toFixed(1)}</div>
+                        <div className="text-blue-100">Average Score</div>
                     </div>
                 </div>
             </div>
