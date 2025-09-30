@@ -52,7 +52,7 @@ def delivery_report(err: KafkaError, msg: Message) -> None:
         logger.info(f"Message delivered | Key: {msg.key()} | Partition: {msg.partition()} | Offset: {msg.offset()}")
 
 
-def extract() -> None:
+def extract(extra_subs: list[str] = []) -> None:
     reddit = praw.Reddit(
        client_id=CLIENT_ID,
        client_secret=CLIENT_SECRET,
@@ -60,7 +60,10 @@ def extract() -> None:
     )
     kafka_producer = setup_kafka_producer()
     TOPIC_NAME = "reddit-comments"
-    SUBREDDITS = ["datascience", "Destiny", "WatchPeopleDieInside"]
+    if extra_subs:
+        SUBREDDITS = extra_subs
+    else:
+        SUBREDDITS = ["datascience", "Destiny", "WatchPeopleDieInside"]
     REDDIT_SUBMISSIONS_LIMIT = 10
     REDDIT_COMMENTS_LIMIT = 20
     

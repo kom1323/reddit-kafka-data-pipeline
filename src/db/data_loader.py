@@ -173,14 +173,31 @@ def load_csv_data(cur: Cursor, conn: Connection, directory: str) -> None:
             load_entries(table_name, f, cur, conn)
 
 
+
+def check_subreddits_exists(cur: Cursor, conn: Connection, subreddits: list[str]) -> list[str]:
+    """
+    Returns all the subreddits that don't exist in the database
+    """
+
+    query = f"""
+         SELECT DISTINCT subreddit 
+        FROM reddit_comments
+    """
+    cur.execute(query)
+    database_subs = [sub[0] for sub in cur.fetchall()]
+    return list(set(subreddits) - set(database_subs))    
+
+
+
 def main():
     directory = 'data'
     with connect_psycorpg() as conn:
         cur = conn.cursor()
-        load_csv_data(cur, conn, directory)
-        cur.execute("SELECT tablename FROM pg_tables WHERE schemaname = 'public';")
-        logger.debug("Showing the tables")
-        logger.debug(cur.fetchall())
+        # load_csv_data(cur, conn, directory)
+        # cur.execute("SELECT tablename FROM pg_tables WHERE schemaname = 'public';")
+        # logger.debug("Showing the tables")
+        # logger.debug(cur.fetchall())
+        check_subreddits_exists(cur, conn, ["Destiny"])
 
 if __name__ == "__main__":
     main()

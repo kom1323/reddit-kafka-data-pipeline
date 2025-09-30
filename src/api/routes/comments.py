@@ -1,7 +1,10 @@
 from fastapi import APIRouter, HTTPException, Query
 from src.db.connections import connect_psycorpg
+from src.db.data_loader import check_subreddits_exists
+from src.stream.reddit_extractor import extract
 from src.utils.logging_config import get_logger
 from typing import Annotated
+
 logger = get_logger(__name__)
 router = APIRouter()
 
@@ -48,6 +51,10 @@ async def search_comments(  q: Annotated[str, Query(min_length=1,max_length=50)]
         with connect_psycorpg() as conn:
             cur = conn.cursor()
 
+            subs_to_add = check_subreddits_exists(cur, conn, subreddits)
+            if subs_to_add:
+                extract(subs_to_add)
+
             placeholders = ", ".join(["%s"] * len(subreddits))
             query = f"""
                     SELECT id, body, subreddit, score, author, created_utc
@@ -58,6 +65,7 @@ async def search_comments(  q: Annotated[str, Query(min_length=1,max_length=50)]
                     """
             params = [f"%{q}%"] + subreddits + [limit]
             cur.execute(query, params)
+
             results = [
                 {
                     "id": entry[0],
