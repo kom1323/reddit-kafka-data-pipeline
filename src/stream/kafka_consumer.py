@@ -5,6 +5,7 @@ from src.models.reddit import RedditComment
 from src.db.connections import connect_psycorpg
 from psycopg import Connection, Cursor
 from src.db.data_loader import create_reddit_comments_table, insert_reddit_comment
+import threading
 logger = get_logger(__name__)
 
 def setup_kafka_consumer() -> Consumer:
@@ -35,7 +36,7 @@ def msg_to_postgres(msg: Message, cur: Cursor, conn: Connection) -> None:
 
 
 
-def consume_comments() -> None:
+def consume_comments(api_exit_event: threading.Event) -> None:
     consumer = setup_kafka_consumer()
     TOPIC_NAME = "reddit-comments"
     
@@ -48,6 +49,8 @@ def consume_comments() -> None:
         logger.info(f"Consuming messages from {TOPIC_NAME}...")
         try:
             while True:
+                if api_exit_event.is_set():
+                    break
                 msg = consumer.poll(timeout=1.0)
                 if msg is None:
                     continue

@@ -134,7 +134,7 @@ def create_reddit_comments_table(cur: Cursor, conn: Connection) -> None:
     
     cur.execute(sql_query)
     conn.commit()
-    logger.info(f"Table {table_name} created successfully")
+    logger.info(f"Table {table_name} created \ watched successfully")
 
     
 def insert_reddit_comment(reddit_comment: RedditComment, cur: Cursor, conn: Connection) -> None:

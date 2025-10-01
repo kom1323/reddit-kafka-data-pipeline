@@ -4,7 +4,7 @@ from src.db.data_loader import check_subreddits_exists
 from src.stream.reddit_extractor import extract
 from src.utils.logging_config import get_logger
 from typing import Annotated
-
+import time
 logger = get_logger(__name__)
 router = APIRouter()
 
@@ -53,7 +53,8 @@ async def search_comments(  q: Annotated[str, Query(min_length=1,max_length=50)]
 
             subs_to_add = check_subreddits_exists(cur, conn, subreddits)
             if subs_to_add:
-                extract(subs_to_add)
+                await extract(subs_to_add)
+                
 
             placeholders = ", ".join(["%s"] * len(subreddits))
             query = f"""

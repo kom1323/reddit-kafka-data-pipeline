@@ -1,10 +1,7 @@
-import pandas as pd
-import praw
+import asyncpraw
 import os
 from typing import Dict
 from datetime import datetime, timezone
-
-from praw.models import Subreddits
 from src.models.reddit import RedditComment
 from confluent_kafka import Producer, KafkaError, Message
 from src.utils.logging_config import get_logger
@@ -52,8 +49,8 @@ def delivery_report(err: KafkaError, msg: Message) -> None:
         logger.info(f"Message delivered | Key: {msg.key()} | Partition: {msg.partition()} | Offset: {msg.offset()}")
 
 
-def extract(extra_subs: list[str] = []) -> None:
-    reddit = praw.Reddit(
+async def extract(extra_subs: list[str] = []) -> None:
+    reddit = asyncpraw.Reddit(
        client_id=CLIENT_ID,
        client_secret=CLIENT_SECRET,
        user_agent=USER_AGENT
@@ -68,15 +65,19 @@ def extract(extra_subs: list[str] = []) -> None:
     REDDIT_COMMENTS_LIMIT = 20
     
 
-    subreddits = [reddit.subreddit(subreddit_name) for subreddit_name in SUBREDDITS]
+    subreddits = []
+    for subreddit_name in SUBREDDITS:
+        subreddit = await reddit.subreddit(subreddit_name)
+        subreddits.append(subreddit)
 
     for subreddit in subreddits:
-        for submission in subreddit.new(limit=REDDIT_SUBMISSIONS_LIMIT):
-            
+        async for submission in subreddit.new(limit=REDDIT_SUBMISSIONS_LIMIT):
+            await submission.load()
             logger.info(f"Reading submission {submission.id}") 
-            for comment in submission.comments.list()[:REDDIT_COMMENTS_LIMIT]:
-                
-                comment_data = extract_comment_data(comment)
+            comments_list = await submission.comments.list()
+            for comments in comments_list[:REDDIT_COMMENTS_LIMIT]:
+            
+                comment_data = extract_comment_data(comments)
                 reddit_comment = RedditComment(**comment_data)
                 kafka_producer.produce(TOPIC_NAME,
                                         value=reddit_comment.model_dump_json(),
