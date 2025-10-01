@@ -13,3 +13,5 @@ class RedditComment(BaseModel):
     total_awards_received: int
     body: str
     body_html: str
+    sentiment_score: Optional[float] = None
+    sentiment_label: Optional[str] = None

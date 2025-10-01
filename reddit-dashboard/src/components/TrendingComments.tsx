@@ -5,8 +5,18 @@ interface TrendingCommentsProps {
 };
 
 
+
 export default function TrendingComments( { data }: TrendingCommentsProps) {
 
+
+    const getSentimentColor = (sentiment: string) => {
+        switch (sentiment.toLowerCase()) {
+            case 'positive': return 'text-green-600';
+            case 'negative': return 'text-red-600';
+            default: return 'text-gray-600';
+        }
+    };
+     
     return (
         <div className="bg-white rounded-lg shadow-md p-6">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 border-b border-gray-200 pb-2">
@@ -26,7 +36,14 @@ export default function TrendingComments( { data }: TrendingCommentsProps) {
                             </div>
                             <span className="text-sm font-semibold text-green-600">↑ {comment.score}</span>
                         </div>
-                        
+                        <div className="flex items-center space-x-2">
+                            <span className={`text-xs px-2 py-1 rounded-full ${getSentimentColor(comment.sentiment_label)}`}>
+                                {comment.sentiment_label}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                                {Math.round(comment.sentiment_score * 100)}%
+                            </span>
+                        </div>
                         {/* Comment body */}
                         <p className="text-gray-700 text-sm leading-relaxed">
                             { comment.body }

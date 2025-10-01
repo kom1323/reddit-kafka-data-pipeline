@@ -58,7 +58,7 @@ async def search_comments(  q: Annotated[str, Query(min_length=1,max_length=50)]
 
             placeholders = ", ".join(["%s"] * len(subreddits))
             query = f"""
-                    SELECT id, body, subreddit, score, author, created_utc
+                    SELECT id, body, subreddit, score, author, created_utc, sentiment_label, sentiment_score
                     FROM reddit_comments
                     WHERE body ILIKE %s AND subreddit IN ({placeholders})
                     ORDER BY created_utc DESC
@@ -74,7 +74,9 @@ async def search_comments(  q: Annotated[str, Query(min_length=1,max_length=50)]
                     "subreddit": entry[2],
                     "score": entry[3],
                     "author": entry[4],
-                    "created_utc": entry[5]
+                    "created_utc": entry[5],
+                    "sentiment_label": entry[6],
+                    "sentiment_score": entry[7],
                 } 
                 for entry in cur.fetchall()
             ]

@@ -30,6 +30,8 @@ export interface Comment {
   subreddit: string;
   score: number;
   author: string;
+  sentiment_score: number;
+  sentiment_label: string;
 } 
 
 

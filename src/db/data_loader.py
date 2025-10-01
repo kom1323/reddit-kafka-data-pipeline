@@ -120,20 +120,29 @@ def create_reddit_comments_table(cur: Cursor, conn: Connection) -> None:
         'author': 'VARCHAR(50) NULL',
         'parent_id': 'VARCHAR(20)',
         'is_submitter': 'BOOLEAN',
-        'total_awards_received': 'INTEGER'
+        'total_awards_received': 'INTEGER',
+        'sentiment_score': 'FLOAT',
+        'sentiment_label': 'VARCHAR(20)'
     }
 
     columns_sql = ',\n    '.join([f"{col} {dtype}" for col, dtype in schema.items()])
     
     sql_query = f"""
                 DROP TABLE IF EXISTS {table_name};
-                CREATE TABLE {table_name} (
+                """
+
+    cur.execute(sql_query)
+    conn.commit()
+
+    sql_query = f"""CREATE TABLE {table_name} (
                     {columns_sql}
                 );
                 """
     
     cur.execute(sql_query)
     conn.commit()
+    
+
     logger.info(f"Table {table_name} created \ watched successfully")
 
     
@@ -152,7 +161,6 @@ def insert_reddit_comment(reddit_comment: RedditComment, cur: Cursor, conn: Conn
 
     cur.execute(insert_sql, comment_dict)
     conn.commit()
-
     # Check if row was actually inserted
     if cur.rowcount <= 0:
         logger.debug(f"Duplicate comment {comment_dict['id']} skipped")
