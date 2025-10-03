@@ -12,7 +12,7 @@ export default function SummaryWidget({ data }: SummaryWidgetProps) {
     
     const topComments = data.sort((a: Comment, b: Comment) => b.score - a.score).slice(0, 10);
     const avgScore = data.reduce((sum, comment) => sum + comment.score, 0) / data.length;
-
+    const posRatio = data.reduce((sum, comment) => sum + comment.sentiment_label === 'POSITIVE' ? 1 : 0, 0) / data.length;
 
     const authorCounts = data.reduce((counts, comment) => {
         counts[comment.author] = (counts[comment.author] || 0) + 1;
@@ -67,6 +67,10 @@ export default function SummaryWidget({ data }: SummaryWidgetProps) {
                     <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4">
                         <div className="text-3xl font-bold">{avgScore.toFixed(1)}</div>
                         <div className="text-blue-100">Average Score</div>
+                    </div>
+                    <div className="bg-white/20 backdrop-blur-sm rounded-lg p-4">
+                        <div className="text-3xl font-bold">{posRatio.toFixed(1)}</div>
+                        <div className="text-blue-100">Positive / All</div>
                     </div>
                 </div>
             </div>
