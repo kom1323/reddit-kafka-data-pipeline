@@ -6,6 +6,7 @@ from src.models.reddit import RedditComment
 from confluent_kafka import Producer, KafkaError, Message
 from src.utils.logging_config import get_logger
 from dotenv import load_dotenv
+
 load_dotenv(dotenv_path="secrets/.env.app")
 
 CLIENT_ID = os.getenv("REDDIT_CLIENT_ID")
@@ -61,8 +62,8 @@ async def extract(extra_subs: list[str] = []) -> None:
         SUBREDDITS = extra_subs
     else:
         SUBREDDITS = ["datascience", "Destiny", "WatchPeopleDieInside"]
-    REDDIT_SUBMISSIONS_LIMIT = 10
-    REDDIT_COMMENTS_LIMIT = 20
+    REDDIT_SUBMISSIONS_LIMIT = 30
+    REDDIT_COMMENTS_LIMIT = 40
     
 
     subreddits = []
@@ -75,9 +76,10 @@ async def extract(extra_subs: list[str] = []) -> None:
             await submission.load()
             logger.info(f"Reading submission {submission.id}") 
             comments_list = await submission.comments.list()
-            for comments in comments_list[:REDDIT_COMMENTS_LIMIT]:
-            
-                comment_data = extract_comment_data(comments)
+            for comment in comments_list[:REDDIT_COMMENTS_LIMIT]:
+                if type(comment) == asyncpraw.models.MoreComments:
+                    continue
+                comment_data = extract_comment_data(comment)
                 reddit_comment = RedditComment(**comment_data)
                 kafka_producer.produce(TOPIC_NAME,
                                         value=reddit_comment.model_dump_json(),

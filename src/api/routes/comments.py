@@ -4,7 +4,7 @@ from src.db.data_loader import check_subreddits_exists
 from src.stream.reddit_extractor import extract
 from src.utils.logging_config import get_logger
 from typing import Annotated
-import time
+import asyncio
 logger = get_logger(__name__)
 router = APIRouter()
 
@@ -43,10 +43,11 @@ async def get_comments(limit: Annotated[int | None, Query(le=100)] = None,
         logger.error(e)
         raise HTTPException(status_code=500, detail="Database error")
 
+
 @router.get("/search")
 async def search_comments(  q: Annotated[str, Query(min_length=1,max_length=50)],
                             subreddits: Annotated[list[str], Query()],
-                            limit: Annotated[int | None, Query(ge=1, le=100)]=20):
+                            limit: Annotated[int | None, Query(ge=1, le=100)]= None):
     try:
         with connect_psycorpg() as conn:
             cur = conn.cursor()
@@ -62,9 +63,13 @@ async def search_comments(  q: Annotated[str, Query(min_length=1,max_length=50)]
                     FROM reddit_comments
                     WHERE body ILIKE %s AND subreddit IN ({placeholders})
                     ORDER BY created_utc DESC
-                    LIMIT %s
                     """
-            params = [f"%{q}%"] + subreddits + [limit]
+
+            params = [f"%{q}%"] + subreddits        
+            if limit is not None:
+                query += "LIMIT %s"
+                params.append(limit)
+                
             cur.execute(query, params)
 
             results = [

@@ -41,10 +41,37 @@ export default function SummaryWidget({ data }: SummaryWidgetProps) {
 
     const subredditsList = Object.entries(subredditsCount)
         .sort(([,a], [, b]) => b - a)
-        .map(([subreddit, count]) => ({
-            subreddit: subreddit,
-            commentCount: count
-        }));
+        .map(([subreddit, count]) => {
+            const subredditComments = data.filter(comment => comment.subreddit === subreddit);
+            
+            // Count comments by sentiment label
+            const sentimentCounts = subredditComments.reduce((counts, comment) => {
+                const label = comment.sentiment_label.toUpperCase();
+                counts[label] = (counts[label] || 0) + 1;
+                return counts;
+            }, {} as Record<string, number>);
+            
+            // Find the dominant sentiment (the one with the most comments)
+            let dominantSentiment = 'NEUTRAL';
+            let maxCount = 0;
+            
+            for (const [label, count] of Object.entries(sentimentCounts)) {
+                if (count > maxCount) {
+                    maxCount = count;
+                    dominantSentiment = label;
+                }
+            }
+            
+            // Calculate the percentage of the dominant sentiment
+            const dominantPercentage = Math.round((maxCount / subredditComments.length) * 100);
+            
+            return {
+                subreddit: subreddit,
+                commentCount: count,
+                sentimentLabel: dominantSentiment,
+                sentimentPercentage: dominantPercentage
+            };
+        });
 
 
     return (

@@ -10,7 +10,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Get URL parameters
+  
   const query = searchParams.get('query');
   const subredditsParam = searchParams.get('subreddits');
 
@@ -32,7 +32,7 @@ export default function Dashboard() {
     };
 
     fetchData();
-  }, [query, subredditsParam]); // Re-fetch when parameters change
+  }, [query, subredditsParam]); 
 
   if (loading) {
     return (
