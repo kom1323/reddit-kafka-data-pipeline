@@ -11,11 +11,11 @@ interface SubredditBreakdownProp {
 
 export default function SubredditList({ subreddits }: SubredditBreakdownProp) {
     return (
-        <div className="bg-white rounded-lg shadow-md p-6">
+        <div className="bg-white rounded-lg shadow-md p-6 flex flex-col h-full">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 border-b border-gray-200 pb-2">
                 Subreddit Breakdown
             </h3>
-            <div className="space-y-3">
+            <div className="space-y-3 flex-1 overflow-auto">
                 {subreddits.map((sub, index) => (
                     <div 
                         key={index}

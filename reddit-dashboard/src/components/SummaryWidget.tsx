@@ -2,6 +2,7 @@ import { type Comment} from "../services/api";
 import SubredditList from "./SubredditList";
 import TopAuthorsList from "./TopAuthorsList";
 import SentimentDistribution from "./SentimentDistribution";
+import WordCloud from "./WordCloud";
 
 interface SummaryWidgetProps {
     data: Comment[];
@@ -13,7 +14,6 @@ export default function SummaryWidget({ data }: SummaryWidgetProps) {
     
     const topComments = data.sort((a: Comment, b: Comment) => b.score - a.score).slice(0, 10);
     const avgScore = data.reduce((sum, comment) => sum + comment.score, 0) / data.length;
-    const posRatio = data.reduce((sum, comment) => sum + (comment.sentiment_label === 'POSITIVE' ? 1 : 0), 0) / data.length;
 
     const authorCounts = data.reduce((counts, comment) => {
         counts[comment.author] = (counts[comment.author] || 0) + 1;
@@ -82,13 +82,22 @@ export default function SummaryWidget({ data }: SummaryWidgetProps) {
                     </div>
                 </div>
             </div>
-                {/* Components Grid */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <TopAuthorsList topAuthors={topAuthorsList} />
-                    <SubredditList subreddits={subredditsList} />
+            
+            {/* Components Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <TopAuthorsList topAuthors={topAuthorsList} />
+                
+                {/* Right column - Subreddit List and Word Cloud in a vertical stack */}
+                <div className="grid grid-rows-[1fr_auto] gap-1 h-full">
+                    <div className="mb-1 overflow-auto">
+                        <SubredditList subreddits={subredditsList} />
+                    </div>
+                    
+                    <div className="flex items-center justify-center">
+                        <WordCloud data={data} />
+                    </div>
                 </div>
-           
+            </div>
         </div>
     );
-
 }

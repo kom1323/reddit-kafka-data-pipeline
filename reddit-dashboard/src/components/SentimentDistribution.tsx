@@ -18,7 +18,7 @@ type PieSectorData = {
   payload?: any;
 };
 
-interface SummaryWidgetProps {
+interface SentimentDistributionProps {
     data: Comment[];
 }
 
@@ -74,7 +74,7 @@ const renderActiveShape = ({
   );
 };
 
-export default function SentimentDistribution({ data }: SummaryWidgetProps ) {
+export default function SentimentDistribution({ data }: SentimentDistributionProps ) {
 
     const summedData = data.reduce((allSentiments, comment: Comment) => {
         const sentimentKey = comment.sentiment_label.toLowerCase() as 'positive' | 'negative' | 'neutral';
