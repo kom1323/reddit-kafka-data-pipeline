@@ -1,5 +1,6 @@
 import { Cell, Pie, PieChart, ResponsiveContainer, Sector, type SectorProps } from 'recharts';
 import type { Comment } from '../services/api';
+import { SENTIMENT_COLORS, type SentimentLabel } from '../services/constants';
 
 type Coordinate = {
   x: number;
@@ -24,12 +25,6 @@ interface SentimentDistributionProps {
 
 type PieSectorDataItem = React.SVGProps<SVGPathElement> & Partial<SectorProps> & PieSectorData;
 
-// Custom colors for sentiment categories
-const COLORS = {
-  Positive: '#4ade80', // green
-  Negative: '#f87171', // red
-  Neutral: '#93c5fd'   // blue
-};
 
 const renderActiveShape = ({
   cx,
@@ -77,16 +72,19 @@ const renderActiveShape = ({
 export default function SentimentDistribution({ data }: SentimentDistributionProps ) {
 
     const summedData = data.reduce((allSentiments, comment: Comment) => {
-        const sentimentKey = comment.sentiment_label.toLowerCase() as 'positive' | 'negative' | 'neutral';
+        const sentimentKey = comment.sentiment_label.toLowerCase() as 'very negative' | 'negative' | 'neutral' | 'positive' | 'very positive';
         allSentiments[sentimentKey] += 1
         return allSentiments;
 
-    }, {positive: 0, negative: 0, neutral: 0});
+    }, {'very negative': 0, negative: 0, neutral: 0, positive: 0, 'very positive': 0});
     
     const chartData = [
-        {name: 'Positive', value: summedData.positive},
+        {name: 'Very Negative', value: summedData['very negative']},
         {name: 'Negative', value: summedData.negative},
         {name: 'Neutral', value: summedData.neutral},
+        {name: 'Positive', value: summedData.positive},
+        {name: 'Very Positive', value: summedData['very positive']},
+
     ];
 
 
@@ -107,7 +105,7 @@ export default function SentimentDistribution({ data }: SentimentDistributionPro
                     {chartData.map((entry, index) => (
                         <Cell 
                             key={`cell-${index}`} 
-                            fill={COLORS[entry.name as keyof typeof COLORS]} 
+                            fill={SENTIMENT_COLORS[entry.name as SentimentLabel]} 
                         />
                     ))}
                 </Pie>

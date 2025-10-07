@@ -26,11 +26,13 @@ export default function SummaryWidget({ data }: SummaryWidgetProps) {
         .map(([author, count]) => {
             const authorComments = data.filter(comment => comment.author === author);
             const avgScore = authorComments.reduce((sum, comment) => sum + comment.score, 0) / authorComments.length;
+            const authorSubreddits = new Set(authorComments.map((comment) => comment.subreddit))
     
             return {
             author: author,
             comment_count: count,
-            avg_score: avgScore
+            avg_score: avgScore,
+            authorSubreddits: authorSubreddits
             };
         });
 

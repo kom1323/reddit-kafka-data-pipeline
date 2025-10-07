@@ -1,4 +1,5 @@
 import { type CommentData } from "../services/api";
+import { getSentimentColor } from "../services/constants";
 
 interface TrendingCommentsProps {
     data: CommentData;
@@ -8,14 +9,11 @@ interface TrendingCommentsProps {
 
 export default function TrendingComments( { data }: TrendingCommentsProps) {
 
+    const comments = data?.comments;
+    const truncatedCommentData = comments
+        .slice(0, Math.min(10, comments.length))
+        .concat(comments.slice(Math.max(10, comments.length - 10)));
 
-    const getSentimentColor = (sentiment: string) => {
-        switch (sentiment.toLowerCase()) {
-            case 'positive': return 'text-green-600';
-            case 'negative': return 'text-red-600';
-            default: return 'text-gray-600';
-        }
-    };
      
     return (
         <div className="bg-white rounded-lg shadow-md p-6">
@@ -23,7 +21,7 @@ export default function TrendingComments( { data }: TrendingCommentsProps) {
                 Trending Comments
             </h3>
             <div className="space-y-4 max-h-96 overflow-y-auto">
-                {data?.comments.map((comment, index) => (
+                {truncatedCommentData.map((comment, index) => (
                     <div key={comment.id} className="border border-gray-100 rounded-lg p-4 hover:bg-gray-50 transition-colors">
                         {/* Header with ranking */}
                         <div className="flex items-center justify-between mb-2">
@@ -34,10 +32,14 @@ export default function TrendingComments( { data }: TrendingCommentsProps) {
                                 <span className="text-sm font-medium text-blue-600">r/{comment.subreddit}</span>
                                 <span className="text-sm text-gray-500">by u/{comment.author}</span>
                             </div>
-                            <span className="text-sm font-semibold text-green-600">↑ {comment.score}</span>
+                            {comment.score > 0 
+                                ? <span className="text-sm font-semibold text-green-600">↑ {comment.score}</span>
+                                : <span className="text-sm font-semibold text-red-600">↓ {comment.score}</span>
+                            }
+                            
                         </div>
                         <div className="flex items-center space-x-2">
-                            <span className={`text-xs px-2 py-1 rounded-full ${getSentimentColor(comment.sentiment_label)}`}>
+                            <span className={`text-xs px-2 py-1 rounded-full`} style={{ color: getSentimentColor(comment.sentiment_label) }}>
                                 {comment.sentiment_label}
                             </span>
                             <span className="text-xs text-gray-500">

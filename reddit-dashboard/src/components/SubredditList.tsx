@@ -1,3 +1,5 @@
+import { getSentimentColor } from "../services/constants";
+
 interface Subreddit {
     subreddit: string;
     commentCount: number;
@@ -30,11 +32,7 @@ export default function SubredditList({ subreddits }: SubredditBreakdownProp) {
                                 {sub.commentCount} comments
                             </span>
                             {sub.sentimentLabel && (
-                                <span className={`text-sm px-2 py-1 rounded-full ${
-                                    sub.sentimentLabel === 'POSITIVE' ? 'bg-green-100 text-green-700' :
-                                    sub.sentimentLabel === 'NEGATIVE' ? 'bg-red-100 text-red-700' :
-                                    'bg-gray-100 text-gray-700'
-                                }`}>
+                                <span className="text-sm px-2 py-1 rounded-full" style={{ color: getSentimentColor(sub.sentimentLabel) }}>
                                     {sub.sentimentPercentage}% {sub.sentimentLabel}
                                 </span>
                             )}
