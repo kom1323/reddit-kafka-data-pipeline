@@ -1,12 +1,20 @@
-# Reddit Kafka Data Pipeline
+# Reddit Comment Dashboard
 
-This repository contains a real-time streaming data pipeline that extracts Reddit comments, processes them through Apache Kafka, and stores them in PostgreSQL. The project demonstrates modern data engineering practices including stream processing, message queuing, data validation, and observability.
+A modern web dashboard for searching and analyzing Reddit comments, powered by a real-time streaming data pipeline using React, FastAPI, Apache Kafka, and PostgreSQL with integrated sentiment analysis.
+
 
 ## Pipeline Architecture
 
 The Reddit Kafka Data Pipeline follows a modern streaming architecture:
 
-**Data Flow**
+**High-Level Architecture**
+
+React Dashboard → FastAPI REST API
+                       ↓
+Reddit API (PRAW) → Kafka → PostgreSQL
+
+
+**Detailed Data Flow**
 ```
 Reddit API (PRAW) → Kafka Producer → Kafka Topics → Kafka Consumer → PostgreSQL
      ↑                    ↑              ↓              ↑              ↓
@@ -14,13 +22,15 @@ Host Machine        Host Machine   Docker Container  Host Machine  Docker Contai
 ```
 
 **Key Components:**
+- **React Dashboard**: Modern web interface for searching and analyzing Reddit data
+- **FastAPI Backend**: REST API with automatic data collection for missing subreddits
 - **Reddit Extractor**: Fetches comments from specified subreddits using PRAW
 - **Kafka Producer**: Streams Reddit comments to Kafka topics with subreddit-based partitioning
-- **Kafka Consumer**: Processes messages with Pydantic validation and stores in PostgreSQL
+- **Kafka Consumer**: Processes messages with Pydantic validation, sentiment analysis, and PostgreSQL storage
 - **Database Layer**: PostgreSQL with connection pooling and duplicate handling
 - **Observability**: Structured logging with Kafka metadata tracking
 
-## Running the Pipeline
+### Running the Complete System
 
 ### Prerequisites
 
@@ -45,24 +55,16 @@ Host Machine        Host Machine   Docker Container  Host Machine  Docker Contai
 
 ### Running the Data Pipeline
 
-1. **Create Kafka topic** (one-time setup):
+1. **Start the FastAPI backend** (in one terminal):
    ```bash
-   python -m src.stream.kafka_admin
+   fastapi dev src/api/main.py
    ```
 
-2. **Start the Kafka consumer** (in one terminal):
+2. **Start the React dashboard** (in another terminal):
    ```bash
-   python -m src.stream.kafka_consumer
-   ```
-
-3. **Run the Reddit extractor** (in another terminal):
-   ```bash
-   python -m src.stream.reddit_extractor
-   ```
-
-4. **Verify data storage** by querying PostgreSQL:
-   ```bash
-   python -m src.db.postgres_extract
+   cd reddit-dashboard
+   npm install  # First time only
+   npm run dev
    ```
 
 ## Implementation Details
@@ -91,6 +93,16 @@ PostgreSQL storage with professional practices:
 
 The pipeline is built with Python 3.9+ and relies on the following technologies:
 
+**Frontend Technologies**
+* **React + TypeScript** - Modern frontend framework with type safety
+* **Vite** - Fast build tool and development server
+* **TailwindCSS** - Utility-first CSS framework
+* **React Router** - Client-side routing for navigation
+
+**Backend Web Framework**
+* **FastAPI** - Modern, fast web framework with automatic API documentation
+* **uvicorn** - ASGI server for running FastAPI applications
+
 **Core Infrastructure**
 * **Apache Kafka** - distributed streaming platform for real-time data processing
 * **PostgreSQL** - relational database for persistent storage
@@ -112,46 +124,44 @@ The pipeline is built with Python 3.9+ and relies on the following technologies:
 * [*python-dotenv*](https://github.com/theskumar/python-dotenv) - environment variable management
 * **logging** - structured logging with configurable levels and formatting
 
-## Code Quality and Development
-
-The project follows professional development practices:
+## Development
 
 **Project Structure**
 ```
+reddit-dashboard/ # React frontend application
+└──src/ 
+   ├── components/ # React components (SearchInterface, Dashboard, etc.)
+   ├── services/ # API client and HTTP requests
+   └── assets/ # Static assets and styling
+
+
+
 src/
-├── stream/          # Kafka producers, consumers, and admin utilities
-├── db/             # Database connections, schema, and data loading
-├── utils/          # Logging configuration and shared utilities
-└── models/         # Pydantic data models for validation
+├── api/ # FastAPI backend with REST endpoints
+├── stream/ # Kafka producers, consumers, and admin utilities 
+├── db/ # Database connections, schema, and data loading
+├── utils/ # Logging configuration and shared utilities
+└── models/ # Pydantic data models for validation
 ```
 
-**Key Design Patterns**
-* **Dependency injection** with environment-based configuration
-* **Connection pooling** for efficient database resource management
-* **Structured logging** with correlation IDs and metadata
-* **Error handling** with graceful degradation and retry logic
-* **Type safety** using Python type hints throughout
+**Completed Features**
+- ✅ **FastAPI REST API** for querying stored Reddit data
+- ✅ **React Dashboard** with data search and visualization
+- ✅ **Sentiment Analysis** integrated into the data pipeline
+- ✅ **Automatic Data Collection** for missing subreddits
 
-## Observability and Monitoring
-
-The pipeline includes comprehensive observability features:
-
-* **Structured logging** with timestamps, log levels, and source identification
-* **Kafka metadata tracking** including topics, partitions, and offsets
-* **Database operation logging** with insert success/failure tracking
-* **Performance metrics** for throughput and latency monitoring
-* **Error tracking** with detailed exception logging and context
 
 ## Future Enhancements
-
-**Planned Features**
-- [ ] **FastAPI REST API** for querying stored Reddit data
-- [ ] **React Dashboard** with real-time data visualizations
+- [ ] **Real-time WebSocket Updates** for live data streaming
+- [ ] **Advanced Analytics Dashboard** with charts and graphs
 - [ ] **Apache Airflow** for ETL job orchestration
 - [ ] **dbt** for data transformation and analytics
 - [ ] **Prometheus/Grafana** for metrics and monitoring
 - [ ] **CI/CD Pipeline** with GitHub Actions
 - [ ] **Cloud Deployment** on AWS/GCP with Kubernetes
+- [ ] **User Authentication** and personalized dashboards
+- [ ] **Data Export** functionality (CSV, JSON)
+- [ ] **Reddit Submission Analysis** (not just comments)
 
 ## Contributing
 
