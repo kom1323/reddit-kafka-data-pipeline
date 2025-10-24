@@ -8,11 +8,11 @@ A modern web dashboard for searching and analyzing Reddit comments, powered by a
 The Reddit Kafka Data Pipeline follows a modern streaming architecture:
 
 **High-Level Architecture**
-
+```
 React Dashboard → FastAPI REST API
                        ↓
 Reddit API (PRAW) → Kafka → PostgreSQL
-
+```
 
 **Detailed Data Flow**
 ```
