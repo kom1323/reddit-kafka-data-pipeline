@@ -2,6 +2,10 @@
 
 A modern web dashboard for searching and analyzing Reddit comments, powered by a real-time streaming data pipeline using React, FastAPI, Apache Kafka, and PostgreSQL with integrated sentiment analysis.
 
+# Showcase
+<img width="2634" height="1249" alt="screencapture-localhost-5173-2025-10-25-00_03_31" src="https://github.com/user-attachments/assets/f9fcc512-bb2a-4abd-93b9-07ff84e24782" />
+<img width="3840" height="3346" alt="screencapture-localhost-5173-results-2025-10-25-00_01_36" src="https://github.com/user-attachments/assets/2dabb49b-9fb8-4f7a-8d1c-a664987976fc" />
+
 
 ## Pipeline Architecture
 
